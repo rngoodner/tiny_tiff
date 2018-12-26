@@ -1,0 +1,8 @@
+[package]
+name = "tiny_tiff"
+version = "0.1.0"
+authors = ["ryn1x <ryn1x@tutanota.com>"]
+edition = "2018"
+
+[dependencies]
+libc = "0.2.45"
