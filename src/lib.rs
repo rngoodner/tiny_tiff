@@ -214,7 +214,7 @@ mod tests {
 
     #[test]
     fn can_reader_open() {
-        let _tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let _tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
     }
 
     #[test]
@@ -225,20 +225,20 @@ mod tests {
 
     #[test]
     fn can_reader_close() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_bits_per_sample() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert_eq!(reader_bits_per_sample(tiff, 0), 8);
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_sample_data() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         let mut buffer = [0u8; 191 * 159];
         let result = reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
@@ -248,85 +248,85 @@ mod tests {
 
     #[test]
     fn can_reader_width() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert_eq!(reader_width(tiff), 191);
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_height() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert_eq!(reader_height(tiff), 159);
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_count_frames() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert_eq!(reader_count_frames(tiff), 1);
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_sample_format() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert_eq!(reader_sample_format(tiff), 1);
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_samples_per_pixel() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert_eq!(reader_samples_per_pixel(tiff), 1);
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_image_description() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert_eq!(reader_image_description(tiff), "image description");
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_has_next() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert!(!reader_has_next(tiff));
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_read_next() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert!(!reader_read_next(tiff));
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_success() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert!(reader_success(tiff));
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_was_error() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert!(!reader_was_error(tiff));
         reader_close(tiff);
     }
 
     #[test]
     fn can_reader_last_error() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         assert_eq!(reader_last_error(tiff), "");
         reader_close(tiff);
     }
 
-    #[test]
-    fn can_writer_open() {
-        let _tiff = writer_open("./tests/test_data/cell2.tif", 8, 100, 100).unwrap();
-    }
+    //#[test]
+    //fn can_writer_open() {
+        //let _tiff = writer_open("./tests/test_data/cell2.tif", 8, 100, 100).unwrap();
+    //}
 
     #[test]
     #[should_panic]
@@ -334,16 +334,16 @@ mod tests {
         let _tiff = writer_open("./does/not/exist.tif", 8, 100, 100).unwrap();
     }
 
-    #[test]
-    fn can_writer_max_description_text_size() {
-        let tiff = writer_open("./tests/test_data/cell2.tif", 8, 100, 100).unwrap();
-        let size = writer_max_description_text_size(tiff);
-        assert_ne!(size, 0);
-    }
+    //#[test]
+    //fn can_writer_max_description_text_size() {
+        //let tiff = writer_open("./tests/test_data/cell2.tif", 8, 100, 100).unwrap();
+        //let size = writer_max_description_text_size(tiff);
+        //assert_ne!(size, 0);
+    //}
 
     #[test]
-    fn can_writer_write_image_void_and_close() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+    fn can_writer_write_image_void8_and_close() {
+        let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
         let bits = reader_bits_per_sample(tiff, 0);
         let width = reader_width(tiff);
         let height = reader_height(tiff);
@@ -351,37 +351,52 @@ mod tests {
         reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
 
-        let tiff = writer_open("./tests/test_data/cell2.tif", bits, width, height).unwrap();
+        let tiff = writer_open("./tests/test_data/cell8_2.tif", bits, width, height).unwrap();
+        writer_write_image_void(tiff, &buffer);
+        writer_close(tiff, "test description");
+    }
+
+    #[test]
+    fn can_writer_write_image_void16_and_close() {
+        let tiff = reader_open("./tests/test_data/cell16.tif").unwrap();
+        let bits = reader_bits_per_sample(tiff, 0);
+        let width = reader_width(tiff);
+        let height = reader_height(tiff);
+        let mut buffer = [0u16; 191 * 159];
+        reader_sample_data(tiff, &buffer, 0);
+        reader_close(tiff);
+
+        let tiff = writer_open("./tests/test_data/cell16_2.tif", bits, width, height).unwrap();
         writer_write_image_void(tiff, &buffer);
         writer_close(tiff, "test description");
     }
 
     #[test]
     fn can_writer_write_image_float_and_close() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell32.tif").unwrap();
         let bits = reader_bits_per_sample(tiff, 0);
         let width = reader_width(tiff);
         let height = reader_height(tiff);
-        let mut buffer = [0u8; 191 * 159];
+        let mut buffer = [0f32; 191 * 159];
         reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
 
-        let tiff = writer_open("./tests/test_data/cell3.tif", bits, width, height).unwrap();
+        let tiff = writer_open("./tests/test_data/cell32_2.tif", bits, width, height).unwrap();
         writer_write_image_float(tiff, &buffer);
         writer_close(tiff, "test description");
     }
 
     #[test]
     fn can_writer_write_image_double_and_close() {
-        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let tiff = reader_open("./tests/test_data/cell32.tif").unwrap();
         let bits = reader_bits_per_sample(tiff, 0);
         let width = reader_width(tiff);
         let height = reader_height(tiff);
-        let mut buffer = [0u8; 191 * 159];
+        let mut buffer = [0f32; 191 * 159];
         reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
 
-        let tiff = writer_open("./tests/test_data/cell4.tif", bits, width, height).unwrap();
+        let tiff = writer_open("./tests/test_data/cell32_3.tif", bits, width, height).unwrap();
         writer_write_image_double(tiff, &buffer);
         writer_close(tiff, "test description");
     }
