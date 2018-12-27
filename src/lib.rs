@@ -4,6 +4,7 @@ use libc::c_char;
 use libc::c_int;
 use libc::FILE;
 use std::ffi::CString;
+use std::ffi::c_void;
 
 const TIFF_LAST_ERROR_SIZE: usize = 1024;
 
@@ -41,7 +42,8 @@ pub struct TinyTIFFReaderFile {
 extern "C" {
     fn TinyTIFFReader_open(filename: *const c_char) -> *mut TinyTIFFReaderFile;
     fn TinyTIFFReader_close(tiff: *mut TinyTIFFReaderFile);
-    fn TinyTIFFReader_getBitsPerSample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> u16;
+    fn TinyTIFFReader_getBitsPerSample(tiff: *mut TinyTIFFReaderFile, sample: c_int) -> u16;
+    fn TinyTIFFReader_getSampleData(tiff: *mut TinyTIFFReaderFile, sample_data: *mut c_void, sample: u16) -> c_int;
 }
 
 pub fn reader_open(filename: &str) -> *mut TinyTIFFReaderFile {
@@ -60,8 +62,14 @@ pub fn reader_bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> u16
     bits
 }
 
+pub fn reader_sample_data(tiff: *mut TinyTIFFReaderFile, buffer: *mut c_void, sample: u16) -> c_int {
+    let data = unsafe { TinyTIFFReader_getSampleData(tiff, buffer, sample) };
+    data
+}
+
 mod tests {
     use super::*;
+    use std::ffi::c_void;
 
     #[test]
     fn reader_open_ok() {
@@ -85,5 +93,15 @@ mod tests {
         let tiff = reader_open("./tests/test_data/cell.tif");
         assert_eq!(reader_bits_per_sample(tiff, 0), 8);
         reader_close(tiff);
+    }
+
+    #[test]
+    fn reader_sample_data_ok() {
+        let tiff = reader_open("./tests/test_data/cell.tif");
+        let data = [0u8; 191 * 159];
+        let pntr = data.as_ptr() as *mut c_void;
+        reader_sample_data(tiff, pntr, 0);
+        reader_close(tiff);
+        assert_eq!(data[2], 112);
     }
 }
