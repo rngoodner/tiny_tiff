@@ -1,3 +1,58 @@
+//! # tiny_tiff
+//!
+//! `tiny_tiff` is a wrapper for the TinyTIFF C++ library. It enable easy reading and writing of
+//! uncompressed TIFF images with uint, int, and float data types.
+//!
+//! DEPENDANCIES
+//! ============
+//! 
+//! ## Unix
+//! ```
+//! git clone https://github.com/ryn1x/TinyTIFF.git
+//! cd TinyTIFF
+//! mkdir build
+//! cd build
+//! cmake ..
+//! make
+//! sudo make install
+//! ```
+//! 
+//! ## Windows
+//! ```
+//! git clone https://github.com/ryn1x/TinyTIFF.git
+//! cd TinyTIFF
+//! mkdir build
+//! cd build
+//! cmake ..
+//! cmake -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DBUILD_SHARED_LIBS=TRUE -G "Visual Studio 15 2017 win64" ..
+//! build generated ".sln" file with visual studio
+//! ```
+//! 
+//! SYNOPSIS
+//! ========
+//!
+//! ```
+//! // read
+//! let tiff = reader_open("./tests/test_data/cell32.tif").unwrap();
+//! let bits = reader_bits_per_sample(tiff, 0);
+//! let width = reader_width(tiff);
+//! let height = reader_height(tiff);
+//! let size = (width * height) as usize;
+//! let mut buffer: Vec<f32> = vec![0f32; size];
+//! reader_sample_data(tiff, &buffer, 0);
+//! reader_close(tiff);
+//!
+//! // manuipulate
+//! for px in &mut buffer {
+//!     *px += 42f32;
+//! }
+//!
+//! // write
+//! let tiff = writer_open("./tests/test_data/cell32_mod.tif", bits, width, height).unwrap();
+//! writer_write_image_float(tiff, &buffer);
+//! writer_close(tiff, "test description");
+//! ```
+
 extern crate libc;
 
 use libc::c_char;
@@ -96,6 +151,7 @@ extern "C" {
     fn TinyTIFFWriter_writeImageDouble(tiff: *mut TinyTIFFFile, image_data: *mut c_double);
 }
 
+/// open tiff file for reading
 pub fn reader_open(filename: &str) -> Result<*mut TinyTIFFReaderFile, String> {
     let cfilename = CString::new(filename).unwrap();
     let pntr = cfilename.as_ptr();
@@ -106,46 +162,55 @@ pub fn reader_open(filename: &str) -> Result<*mut TinyTIFFReaderFile, String> {
     }
 }
 
+/// close tiff file
 pub fn reader_close(tiff: *mut TinyTIFFReaderFile) {
     unsafe { TinyTIFFReader_close(tiff) };
 }
 
+/// get bits per sample of current frame
 pub fn reader_bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> u16 {
     let bits = unsafe { TinyTIFFReader_getBitsPerSample(tiff, sample) };
     bits
 }
 
+/// read data from current frame into supplied buffer
 pub fn reader_sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &Vec<T>, sample: u16) -> bool {
     let pntr = buffer.as_ptr() as *mut c_void;
     let data = unsafe { TinyTIFFReader_getSampleData(tiff, pntr, sample) };
     data != 0
 }
-
+ 
+/// get width of current frame
 pub fn reader_width(tiff: *mut TinyTIFFReaderFile) -> u32 {
     let width = unsafe { TinyTIFFReader_getWidth(tiff) };
     width as u32
 }
-
+ 
+/// get height of current frame
 pub fn reader_height(tiff: *mut TinyTIFFReaderFile) -> u32 {
     let height = unsafe { TinyTIFFReader_getHeight(tiff) };
     height as u32
 }
 
+/// get number of frames
 pub fn reader_count_frames(tiff: *mut TinyTIFFReaderFile) -> i32 {
     let frames = unsafe { TinyTIFFReader_countFrames(tiff) };
     frames
 }
-
+ 
+/// get sample format of current frame
 pub fn reader_sample_format(tiff: *mut TinyTIFFReaderFile) -> u16 {
     let format = unsafe { TinyTIFFReader_getSampleFormat(tiff) };
     format
 }
 
+/// get samples per pixel of current from
 pub fn reader_samples_per_pixel(tiff: *mut TinyTIFFReaderFile) -> u16 {
     let format = unsafe { TinyTIFFReader_getSamplesPerPixel(tiff) };
     format
 }
 
+/// get image description of current frame
 pub fn reader_image_description(tiff: *mut TinyTIFFReaderFile) -> String {
     let desc = unsafe { TinyTIFFReader_getImageDescription(tiff) };
     let desc = unsafe { CStr::from_ptr(desc) };
@@ -154,26 +219,31 @@ pub fn reader_image_description(tiff: *mut TinyTIFFReaderFile) -> String {
     desc
 }
 
+/// true if another frame exists
 pub fn reader_has_next(tiff: *mut TinyTIFFReaderFile) -> bool {
     let result = unsafe { TinyTIFFReader_hasNext(tiff) };
     result != 0
 }
 
+/// read next frame from a multi-frame tiff
 pub fn reader_read_next(tiff: *mut TinyTIFFReaderFile) -> bool {
     let result = unsafe { TinyTIFFReader_readNext(tiff) };
     result != 0
 }
 
+/// true if no error in last function call
 pub fn reader_success(tiff: *mut TinyTIFFReaderFile) -> bool {
     let result = unsafe { TinyTIFFReader_success(tiff) };
     result != 0
 }
 
+/// true if error in last function call
 pub fn reader_was_error(tiff: *mut TinyTIFFReaderFile) -> bool {
     let result = unsafe { TinyTIFFReader_wasError(tiff) };
     result != 0
 }
 
+/// get last error messsage
 pub fn reader_last_error(tiff: *mut TinyTIFFReaderFile) -> String {
     let error = unsafe { TinyTIFFReader_getLastError(tiff) };
     let error = unsafe { CStr::from_ptr(error) };
@@ -182,6 +252,7 @@ pub fn reader_last_error(tiff: *mut TinyTIFFReaderFile) -> String {
     error
 }
 
+/// create a new tiff file
 pub fn writer_open(
     filename: &str,
     bits_per_sample: u16,
@@ -197,27 +268,32 @@ pub fn writer_open(
     }
 }
 
+/// get max size for image description
 pub fn writer_max_description_text_size(tiff: *mut TinyTIFFFile) -> i32 {
     let size = unsafe { TinyTIFFWriter_getMaxDescriptionTextSize(tiff) };
     size
 }
 
+/// close the tiff and write image description to first frame
 pub fn writer_close(tiff: *mut TinyTIFFFile, image_description: &str) {
     let image_description = CString::new(image_description).unwrap();
     let image_description = image_description.as_ptr();
     unsafe { TinyTIFFWriter_close(tiff, image_description) };
 }
 
+/// writes row-major image data to a tiff file
 pub fn writer_write_image_void<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_void;
     unsafe { TinyTIFFWriter_writeImageVoid(tiff, pntr) };
 }
 
+/// writes row-major image data to a tiff file
 pub fn writer_write_image_float<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_float;
     unsafe { TinyTIFFWriter_writeImageFloat(tiff, pntr) };
 }
 
+/// writes row-major image data to a tiff file
 pub fn writer_write_image_double<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_double;
     unsafe { TinyTIFFWriter_writeImageDouble(tiff, pntr) };
