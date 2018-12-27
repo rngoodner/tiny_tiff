@@ -191,6 +191,7 @@ pub fn writer_max_description_text_size(tiff: *mut TinyTIFFFile) -> i32 {
 pub fn writer_close(tiff: *mut TinyTIFFFile, image_description: &str) {
     let image_description = CString::new(image_description).unwrap();
     let image_description = image_description.as_ptr();
+    unsafe { TinyTIFFWriter_close(tiff, image_description) };
 }
 
 pub fn writer_write_image_void<T>(tiff: *mut TinyTIFFFile, buffer: &[T]) {
@@ -366,7 +367,7 @@ mod tests {
         reader_close(tiff);
 
         let tiff = writer_open("./tests/test_data/cell3.tif", bits, width, height).unwrap();
-        writer_write_image_void(tiff, &buffer);
+        writer_write_image_float(tiff, &buffer);
         writer_close(tiff, "test description");
     }
 
@@ -381,7 +382,7 @@ mod tests {
         reader_close(tiff);
 
         let tiff = writer_open("./tests/test_data/cell4.tif", bits, width, height).unwrap();
-        writer_write_image_void(tiff, &buffer);
+        writer_write_image_double(tiff, &buffer);
         writer_close(tiff, "test description");
     }
 }
