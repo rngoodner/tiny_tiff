@@ -3,6 +3,7 @@ extern crate libc;
 use libc::c_char;
 use libc::c_int;
 use libc::FILE;
+use std::ffi::CString;
 
 const TIFF_LAST_ERROR_SIZE: usize = 1024;
 
@@ -38,5 +39,51 @@ pub struct TinyTIFFReaderFile {
 
 #[link(name = "tinytiff")]
 extern "C" {
-    pub fn TinyTIFFReader_open(filepath: *const c_char) -> *mut TinyTIFFReaderFile;
+    fn TinyTIFFReader_open(filename: *const c_char) -> *mut TinyTIFFReaderFile;
+    fn TinyTIFFReader_close(tiff: *mut TinyTIFFReaderFile);
+    fn TinyTIFFReader_getBitsPerSample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> u16;
+}
+
+pub fn reader_open(filename: &str) -> *mut TinyTIFFReaderFile {
+    let filename = CString::new(filename).unwrap();
+    let filename = filename.as_ptr();
+    let tiff = unsafe { TinyTIFFReader_open(filename) };
+    tiff
+}
+
+pub fn reader_close(tiff: *mut TinyTIFFReaderFile) {
+    unsafe { TinyTIFFReader_close(tiff) };
+}
+
+pub fn reader_bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> u16 {
+    let bits = unsafe { TinyTIFFReader_getBitsPerSample(tiff, sample) };
+    bits
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reader_open_ok() {
+        let _tiff = reader_open("./tests/test_data/cell.tif");
+    }
+
+    #[test]
+    #[should_panic]
+    fn reader_open_bad_file_panics() {
+        let _tiff = reader_open("./does/not/exist.tif");
+    }
+
+    #[test]
+    fn reader_close_ok() {
+        let tiff = reader_open("./tests/test_data/cell.tif");
+        reader_close(tiff);
+    }
+
+    #[test]
+    fn reader_bits_per_sample_ok() {
+        let tiff = reader_open("./tests/test_data/cell.tif");
+        assert_eq!(reader_bits_per_sample(tiff, 0), 8);
+        reader_close(tiff);
+    }
 }
