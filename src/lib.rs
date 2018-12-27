@@ -46,11 +46,15 @@ extern "C" {
     fn TinyTIFFReader_getSampleData(tiff: *mut TinyTIFFReaderFile, sample_data: *mut c_void, sample: u16) -> c_int;
 }
 
-pub fn reader_open(filename: &str) -> *mut TinyTIFFReaderFile {
-    let filename = CString::new(filename).unwrap();
-    let filename = filename.as_ptr();
-    let tiff = unsafe { TinyTIFFReader_open(filename) };
-    tiff
+pub fn reader_open(filename: &str) -> Result<*mut TinyTIFFReaderFile, String> {
+    let cfilename = CString::new(filename).unwrap();
+    let pntr = cfilename.as_ptr();
+    let tiff = unsafe { TinyTIFFReader_open(pntr) };
+    match tiff.is_null() {
+        false => Ok(tiff),
+        true => Err(format!("Could not open file: {}", String::from(filename)))
+        //false => Err(String::from("Could not open file!"))
+    }
 }
 
 pub fn reader_close(tiff: *mut TinyTIFFReaderFile) {
@@ -73,31 +77,31 @@ mod tests {
 
     #[test]
     fn reader_open_ok() {
-        let _tiff = reader_open("./tests/test_data/cell.tif");
+        let _tiff = reader_open("./tests/test_data/cell.tif").unwrap();
     }
 
     #[test]
     #[should_panic]
     fn reader_open_bad_file_panics() {
-        let _tiff = reader_open("./does/not/exist.tif");
+        let _tiff = reader_open("./does/not/exist.tif").unwrap();
     }
 
     #[test]
     fn reader_close_ok() {
-        let tiff = reader_open("./tests/test_data/cell.tif");
+        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
         reader_close(tiff);
     }
 
     #[test]
     fn reader_bits_per_sample_ok() {
-        let tiff = reader_open("./tests/test_data/cell.tif");
+        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
         assert_eq!(reader_bits_per_sample(tiff, 0), 8);
         reader_close(tiff);
     }
 
     #[test]
     fn reader_sample_data_ok() {
-        let tiff = reader_open("./tests/test_data/cell.tif");
+        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
         let data = [0u8; 191 * 159];
         let pntr = data.as_ptr() as *mut c_void;
         reader_sample_data(tiff, pntr, 0);
