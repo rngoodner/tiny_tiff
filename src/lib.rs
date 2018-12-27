@@ -6,6 +6,9 @@ use libc::FILE;
 use std::ffi::CString;
 use std::ffi::CStr;
 use std::ffi::c_void;
+use std::os::raw::c_long;
+use std::os::raw::c_float;
+use std::os::raw::c_double;
 
 const TIFF_LAST_ERROR_SIZE: usize = 1024;
 
@@ -39,6 +42,25 @@ pub struct TinyTIFFReaderFile {
     currentFrame: TinyTIFFReaderFrame
 }
 
+#[repr(C)]
+pub struct TinyTIFFFile {
+    file: *mut FILE,
+    lastIFDOffsetField: u32,
+    lastStartPos: c_long,
+    lastIFDDATAAdress: u32,
+    lastIFDCount: u16,
+    lastHeader: *mut u8,
+    lastHeaderSize: c_int,
+    pos: u32,
+    width: u32,
+    height: u32,
+    bitspersample: u16,
+    descriptionOffset: u32,
+    descriptionSizeOffset: u32,
+    frames: u64,
+    byteorder: u8
+}
+
 #[link(name = "tinytiff")]
 extern "C" {
     fn TinyTIFFReader_open(filename: *const c_char) -> *mut TinyTIFFReaderFile;
@@ -56,6 +78,13 @@ extern "C" {
     fn TinyTIFFReader_success(tiff: *mut TinyTIFFReaderFile) -> c_int;
     fn TinyTIFFReader_wasError(tiff: *mut TinyTIFFReaderFile) -> c_int;
     fn TinyTIFFReader_getLastError(tiff: *mut TinyTIFFReaderFile) -> *const c_char;
+
+    fn TinyTIFFWriter_open(filename: *const c_char, bits_per_sample: u16, width: u32, height: u32) -> *mut TinyTIFFFile;
+    fn TinyTIFFWriter_getMaxDescriptionTextSize(tiff: *mut TinyTIFFFile) -> c_int;
+    fn TinyTIFFWriter_close(tiff: *mut TinyTIFFFile, image_description: *const c_char);
+    fn TinyTIFFWriter_writeImageVoid(tiff: *mut TinyTIFFFile, image_data: *mut c_void);
+    fn TinyTIFFWriter_writeImageFloat(tiff: *mut TinyTIFFFile, image_data: *mut c_float);
+    fn TinyTIFFWriter_writeImageDouble(tiff: *mut TinyTIFFFile, image_data: *mut c_double);
 }
 
 pub fn reader_open(filename: &str) -> Result<*mut TinyTIFFReaderFile, String> {
@@ -83,14 +112,14 @@ pub fn reader_sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &[T], sample
     data != 0
 }
 
-pub fn reader_width(tiff: *mut TinyTIFFReaderFile) -> i32 {
+pub fn reader_width(tiff: *mut TinyTIFFReaderFile) -> u32 {
     let width = unsafe { TinyTIFFReader_getWidth(tiff) };
-    width
+    width as u32
 }
 
-pub fn reader_height(tiff: *mut TinyTIFFReaderFile) -> i32 {
+pub fn reader_height(tiff: *mut TinyTIFFReaderFile) -> u32 {
     let height = unsafe { TinyTIFFReader_getHeight(tiff) };
-    height
+    height as u32
 }
 
 pub fn reader_count_frames(tiff: *mut TinyTIFFReaderFile) -> i32 {
@@ -142,6 +171,41 @@ pub fn reader_last_error(tiff: *mut TinyTIFFReaderFile) -> String {
     let error = error.to_str().unwrap();
     let error = String::from(error);
     error
+}
+
+pub fn writer_open(filename: &str, bits_per_sample: u16, width: u32, height: u32) -> Result<*mut TinyTIFFFile, String> {
+    let cfilename = CString::new(filename).unwrap();
+    let pntr = cfilename.as_ptr();
+    let tiff = unsafe { TinyTIFFWriter_open(pntr, bits_per_sample, width, height) };
+    match tiff.is_null() {
+        false => Ok(tiff),
+        true => Err(format!("Could not open file: {}", String::from(filename)))
+    }
+}
+
+pub fn writer_max_description_text_size(tiff: *mut TinyTIFFFile) -> i32 {
+    let size = unsafe { TinyTIFFWriter_getMaxDescriptionTextSize(tiff) };
+    size
+}
+
+pub fn writer_close(tiff: *mut TinyTIFFFile, image_description: &str) {
+    let image_description = CString::new(image_description).unwrap();
+    let image_description = image_description.as_ptr();
+}
+
+pub fn writer_write_image_void<T>(tiff: *mut TinyTIFFFile, buffer: &[T]) {
+    let pntr = buffer.as_ptr() as *mut c_void;
+    unsafe { TinyTIFFWriter_writeImageVoid(tiff, pntr) };
+}
+
+pub fn writer_write_image_float<T>(tiff: *mut TinyTIFFFile, buffer: &[T]) {
+    let pntr = buffer.as_ptr() as *mut c_float;
+    unsafe { TinyTIFFWriter_writeImageFloat(tiff, pntr) };
+}
+
+pub fn writer_write_image_double<T>(tiff: *mut TinyTIFFFile, buffer: &[T]) {
+    let pntr = buffer.as_ptr() as *mut c_double;
+    unsafe { TinyTIFFWriter_writeImageDouble(tiff, pntr) };
 }
 
 mod tests {
@@ -256,5 +320,68 @@ mod tests {
         let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
         assert_eq!(reader_last_error(tiff), "");
         reader_close(tiff);
+    }
+
+    #[test]
+    fn can_writer_open() {
+        let _tiff = writer_open("./tests/test_data/cell2.tif", 8, 100, 100).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn writer_open_bad_file_panics() {
+        let _tiff = writer_open("./does/not/exist.tif", 8, 100, 100).unwrap();
+    }
+
+    #[test]
+    fn can_writer_max_description_text_size() {
+        let tiff = writer_open("./tests/test_data/cell2.tif", 8, 100, 100).unwrap();
+        let size = writer_max_description_text_size(tiff);
+        assert_ne!(size, 0);
+    }
+
+    #[test]
+    fn can_writer_write_image_void_and_close() {
+        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let bits = reader_bits_per_sample(tiff, 0);
+        let width = reader_width(tiff);
+        let height = reader_height(tiff);
+        let mut buffer = [0u8; 191 * 159];
+        reader_sample_data(tiff, &buffer, 0);
+        reader_close(tiff);
+
+        let tiff = writer_open("./tests/test_data/cell2.tif", bits, width, height).unwrap();
+        writer_write_image_void(tiff, &buffer);
+        writer_close(tiff, "test description");
+    }
+
+    #[test]
+    fn can_writer_write_image_float_and_close() {
+        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let bits = reader_bits_per_sample(tiff, 0);
+        let width = reader_width(tiff);
+        let height = reader_height(tiff);
+        let mut buffer = [0u8; 191 * 159];
+        reader_sample_data(tiff, &buffer, 0);
+        reader_close(tiff);
+
+        let tiff = writer_open("./tests/test_data/cell3.tif", bits, width, height).unwrap();
+        writer_write_image_void(tiff, &buffer);
+        writer_close(tiff, "test description");
+    }
+
+    #[test]
+    fn can_writer_write_image_double_and_close() {
+        let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
+        let bits = reader_bits_per_sample(tiff, 0);
+        let width = reader_width(tiff);
+        let height = reader_height(tiff);
+        let mut buffer = [0u8; 191 * 159];
+        reader_sample_data(tiff, &buffer, 0);
+        reader_close(tiff);
+
+        let tiff = writer_open("./tests/test_data/cell4.tif", bits, width, height).unwrap();
+        writer_write_image_void(tiff, &buffer);
+        writer_close(tiff, "test description");
     }
 }
