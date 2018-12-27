@@ -1,6 +1,6 @@
 //! # tiny_tiff
 //!
-//! `tiny_tiff` is a wrapper for the TinyTIFF C++ library. It enable easy reading and writing of
+//! `tiny_tiff` is a wrapper for the TinyTIFF C++ library. It enables easy reading and writing of
 //! uncompressed TIFF images with uint, int, and float data types.
 //!
 //! DEPENDANCIES
