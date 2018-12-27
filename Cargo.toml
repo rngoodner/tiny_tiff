@@ -5,6 +5,9 @@ authors = ["ryn1x <ryn1x@tutanota.com>"]
 edition = "2018"
 description = "tiny_tiff is a wrapper for the TinyTIFF C++ library. It enables easy reading and writing of uncompressed TIFF images with uint, int, and float data types."
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/ryn1x/tiny_tiff"
+keywords = ["tiff", "tif", "image", "graphics"]
+readme = "README.md"
 
 [dependencies]
 libc = "0.2.45"
