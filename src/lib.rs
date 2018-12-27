@@ -66,8 +66,9 @@ pub fn reader_bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> u16
     bits
 }
 
-pub fn reader_sample_data(tiff: *mut TinyTIFFReaderFile, buffer: *mut c_void, sample: u16) -> c_int {
-    let data = unsafe { TinyTIFFReader_getSampleData(tiff, buffer, sample) };
+pub fn reader_sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &[T], sample: u16) -> c_int {
+    let pntr = buffer.as_ptr() as *mut c_void;
+    let data = unsafe { TinyTIFFReader_getSampleData(tiff, pntr, sample) };
     data
 }
 
@@ -102,10 +103,9 @@ mod tests {
     #[test]
     fn reader_sample_data_ok() {
         let tiff = reader_open("./tests/test_data/cell.tif").unwrap();
-        let data = [0u8; 191 * 159];
-        let pntr = data.as_ptr() as *mut c_void;
-        reader_sample_data(tiff, pntr, 0);
+        let mut buffer = [0u8; 191 * 159];
+        reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
-        assert_eq!(data[2], 112);
+        assert_eq!(buffer[2], 112);
     }
 }
