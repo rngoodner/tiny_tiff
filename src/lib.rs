@@ -106,7 +106,7 @@ pub fn reader_bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> u16
     bits
 }
 
-pub fn reader_sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &[T], sample: u16) -> bool {
+pub fn reader_sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &Vec<T>, sample: u16) -> bool {
     let pntr = buffer.as_ptr() as *mut c_void;
     let data = unsafe { TinyTIFFReader_getSampleData(tiff, pntr, sample) };
     data != 0
@@ -194,17 +194,17 @@ pub fn writer_close(tiff: *mut TinyTIFFFile, image_description: &str) {
     unsafe { TinyTIFFWriter_close(tiff, image_description) };
 }
 
-pub fn writer_write_image_void<T>(tiff: *mut TinyTIFFFile, buffer: &[T]) {
+pub fn writer_write_image_void<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_void;
     unsafe { TinyTIFFWriter_writeImageVoid(tiff, pntr) };
 }
 
-pub fn writer_write_image_float<T>(tiff: *mut TinyTIFFFile, buffer: &[T]) {
+pub fn writer_write_image_float<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_float;
     unsafe { TinyTIFFWriter_writeImageFloat(tiff, pntr) };
 }
 
-pub fn writer_write_image_double<T>(tiff: *mut TinyTIFFFile, buffer: &[T]) {
+pub fn writer_write_image_double<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_double;
     unsafe { TinyTIFFWriter_writeImageDouble(tiff, pntr) };
 }
@@ -239,11 +239,14 @@ mod tests {
     #[test]
     fn can_reader_sample_data() {
         let tiff = reader_open("./tests/test_data/cell8.tif").unwrap();
-        let mut buffer = [0u8; 191 * 159];
+        let width = reader_width(tiff);
+        let height = reader_height(tiff);
+        let size = (width * height) as usize;
+        let mut buffer: Vec<u8> = vec![0u8; size];
         let result = reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
         assert!(result);
-        assert_eq!(buffer[2], 112);
+        assert_eq!(buffer[2], 112 as u8);
     }
 
     #[test]
@@ -347,7 +350,8 @@ mod tests {
         let bits = reader_bits_per_sample(tiff, 0);
         let width = reader_width(tiff);
         let height = reader_height(tiff);
-        let mut buffer = [0u8; 191 * 159];
+        let size = (width * height) as usize;
+        let mut buffer: Vec<u8> = vec![0u8; size];
         reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
 
@@ -362,7 +366,8 @@ mod tests {
         let bits = reader_bits_per_sample(tiff, 0);
         let width = reader_width(tiff);
         let height = reader_height(tiff);
-        let mut buffer = [0u16; 191 * 159];
+        let size = (width * height) as usize;
+        let mut buffer: Vec<u16> = vec![0u16; size];
         reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
 
@@ -377,7 +382,8 @@ mod tests {
         let bits = reader_bits_per_sample(tiff, 0);
         let width = reader_width(tiff);
         let height = reader_height(tiff);
-        let mut buffer = [0f32; 191 * 159];
+        let size = (width * height) as usize;
+        let mut buffer: Vec<f32> = vec![0f32; size];
         reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
 
@@ -392,7 +398,8 @@ mod tests {
         let bits = reader_bits_per_sample(tiff, 0);
         let width = reader_width(tiff);
         let height = reader_height(tiff);
-        let mut buffer = [0f32; 191 * 159];
+        let size = (width * height) as usize;
+        let mut buffer: Vec<f32> = vec![0f32; size];
         reader_sample_data(tiff, &buffer, 0);
         reader_close(tiff);
 
