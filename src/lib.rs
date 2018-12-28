@@ -53,7 +53,7 @@
 //!     }
 //!
 //!     // write
-//!     let tiff = writer::open("./tests/test_data/cell32_mod.tif", bits, width, height).unwrap();
+//!     let tiff = writer::open("./tests/test_data/cell32_example.tif", bits, width, height).unwrap();
 //!     writer::write_image_float(tiff, &buffer);
 //!     writer::close(tiff, "test description");
 //! }
