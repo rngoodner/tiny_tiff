@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn can_write_image_void8_and_close() {
         let bits = 8;
-        let width: u32 = 10;
+        let width: u32 = 100;
         let height: u32 = 100;
         let size = (width * height) as usize;
         let mut buffer: Vec<u8> = vec![42u8; size];
@@ -124,7 +124,7 @@ mod tests {
     #[test]
     fn can_write_image_void16_and_close() {
         let bits = 16;
-        let width: u32 = 10;
+        let width: u32 = 100;
         let height: u32 = 100;
         let size = (width * height) as usize;
         let mut buffer: Vec<u16> = vec![42u16; size];
@@ -136,7 +136,7 @@ mod tests {
     #[test]
     fn can_write_image_float32_and_close() {
         let bits = 32;
-        let width: u32 = 10;
+        let width: u32 = 100;
         let height: u32 = 100;
         let size = (width * height) as usize;
         let mut buffer: Vec<f32> = vec![42f32; size];
@@ -148,7 +148,7 @@ mod tests {
     #[test]
     fn can_write_image_double64_and_close() {
         let bits = 64;
-        let width: u32 = 10;
+        let width: u32 = 100;
         let height: u32 = 100;
         let size = (width * height) as usize;
         let mut buffer: Vec<f64> = vec![42f64; size];
