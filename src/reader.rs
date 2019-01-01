@@ -80,15 +80,15 @@ pub fn close(tiff: *mut TinyTIFFReaderFile) {
 }
 
 /// get bits per sample of current frame
-pub fn bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> usize {
-    let bits = unsafe { TinyTIFFReader_getBitsPerSample(tiff, sample) };
+pub fn bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: usize) -> usize {
+    let bits = unsafe { TinyTIFFReader_getBitsPerSample(tiff, sample as i32) };
     bits as usize
 }
 
 /// read data from current frame into supplied buffer
-pub fn sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &Vec<T>, sample: u16) -> bool {
+pub fn sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &Vec<T>, sample: usize) -> bool {
     let pntr = buffer.as_ptr() as *mut c_void;
-    let data = unsafe { TinyTIFFReader_getSampleData(tiff, pntr, sample) };
+    let data = unsafe { TinyTIFFReader_getSampleData(tiff, pntr, sample as u16) };
     data != 0
 }
 
