@@ -80,9 +80,9 @@ pub fn close(tiff: *mut TinyTIFFReaderFile) {
 }
 
 /// get bits per sample of current frame
-pub fn bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> u16 {
+pub fn bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: i32) -> usize {
     let bits = unsafe { TinyTIFFReader_getBitsPerSample(tiff, sample) };
-    bits
+    bits as usize
 }
 
 /// read data from current frame into supplied buffer
@@ -93,33 +93,33 @@ pub fn sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &Vec<T>, sample: u1
 }
 
 /// get width of current frame
-pub fn width(tiff: *mut TinyTIFFReaderFile) -> u32 {
+pub fn width(tiff: *mut TinyTIFFReaderFile) -> usize {
     let width = unsafe { TinyTIFFReader_getWidth(tiff) };
-    width as u32
+    width as usize
 }
 
 /// get height of current frame
-pub fn height(tiff: *mut TinyTIFFReaderFile) -> u32 {
+pub fn height(tiff: *mut TinyTIFFReaderFile) -> usize {
     let height = unsafe { TinyTIFFReader_getHeight(tiff) };
-    height as u32
+    height as usize
 }
 
 /// get number of frames
-pub fn count_frames(tiff: *mut TinyTIFFReaderFile) -> i32 {
+pub fn count_frames(tiff: *mut TinyTIFFReaderFile) -> usize {
     let frames = unsafe { TinyTIFFReader_countFrames(tiff) };
-    frames
+    frames as usize
 }
 
 /// get sample format of current frame
-pub fn sample_format(tiff: *mut TinyTIFFReaderFile) -> u16 {
+pub fn sample_format(tiff: *mut TinyTIFFReaderFile) -> usize {
     let format = unsafe { TinyTIFFReader_getSampleFormat(tiff) };
-    format
+    format as usize
 }
 
 /// get samples per pixel of current from
-pub fn samples_per_pixel(tiff: *mut TinyTIFFReaderFile) -> u16 {
+pub fn samples_per_pixel(tiff: *mut TinyTIFFReaderFile) -> usize {
     let format = unsafe { TinyTIFFReader_getSamplesPerPixel(tiff) };
-    format
+    format as usize
 }
 
 /// get image description of current frame

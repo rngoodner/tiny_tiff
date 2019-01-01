@@ -44,13 +44,14 @@ extern "C" {
 /// create a new tiff file
 pub fn open(
     filename: &str,
-    bits_per_sample: u16,
-    width: u32,
-    height: u32,
+    bits_per_sample: usize,
+    width: usize,
+    height: usize,
 ) -> Result<*mut TinyTIFFFile, String> {
     let cfilename = CString::new(filename).unwrap();
     let pntr = cfilename.as_ptr();
-    let tiff = unsafe { TinyTIFFWriter_open(pntr, bits_per_sample, width, height) };
+    let tiff =
+        unsafe { TinyTIFFWriter_open(pntr, bits_per_sample as u16, width as u32, height as u32) };
     match tiff.is_null() {
         false => Ok(tiff),
         true => Err(format!("Could not open file: {}", String::from(filename))),
@@ -58,9 +59,9 @@ pub fn open(
 }
 
 /// get max size for image description
-pub fn max_description_text_size(tiff: *mut TinyTIFFFile) -> i32 {
+pub fn max_description_text_size(tiff: *mut TinyTIFFFile) -> usize {
     let size = unsafe { TinyTIFFWriter_getMaxDescriptionTextSize(tiff) };
-    size
+    size as usize
 }
 
 /// close the tiff and write image description to first frame
@@ -112,9 +113,9 @@ mod tests {
     #[test]
     fn can_write_image_void8_and_close() {
         let bits = 8;
-        let width: u32 = 100;
-        let height: u32 = 100;
-        let size = (width * height) as usize;
+        let width = 100;
+        let height = 100;
+        let size = width * height;
         let mut buffer: Vec<u8> = vec![42u8; size];
         let tiff = open("./tests/test_data/test8.tif", bits, width, height).unwrap();
         write_image_void(tiff, &buffer);
@@ -124,9 +125,9 @@ mod tests {
     #[test]
     fn can_write_image_void16_and_close() {
         let bits = 16;
-        let width: u32 = 100;
-        let height: u32 = 100;
-        let size = (width * height) as usize;
+        let width = 100;
+        let height = 100;
+        let size = width * height;
         let mut buffer: Vec<u16> = vec![42u16; size];
         let tiff = open("./tests/test_data/test16.tif", bits, width, height).unwrap();
         write_image_void(tiff, &buffer);
@@ -136,9 +137,9 @@ mod tests {
     #[test]
     fn can_write_image_float32_and_close() {
         let bits = 32;
-        let width: u32 = 100;
-        let height: u32 = 100;
-        let size = (width * height) as usize;
+        let width = 100;
+        let height = 100;
+        let size = width * height;
         let mut buffer: Vec<f32> = vec![42f32; size];
         let tiff = open("./tests/test_data/test32.tif", bits, width, height).unwrap();
         write_image_float(tiff, &buffer);
@@ -148,9 +149,9 @@ mod tests {
     #[test]
     fn can_write_image_double64_and_close() {
         let bits = 64;
-        let width: u32 = 100;
-        let height: u32 = 100;
-        let size = (width * height) as usize;
+        let width = 100;
+        let height = 100;
+        let size = width * height;
         let mut buffer: Vec<f64> = vec![42f64; size];
         let tiff = open("./tests/test_data/test64.tif", bits, width, height).unwrap();
         write_image_double(tiff, &buffer);
