@@ -10,7 +10,7 @@ fn can_manipulate_image_8() {
     let width = reader::width(tiff);
     let height = reader::height(tiff);
     let size = width * height;
-    let mut buffer: Vec<u8> = vec![0u8; size];
+    let mut buffer: Vec<u8> = vec![0u8; size as usize];
     reader::sample_data(tiff, &buffer, 0);
     reader::close(tiff);
 
@@ -30,7 +30,7 @@ fn can_manipulate_image_16() {
     let width = reader::width(tiff);
     let height = reader::height(tiff);
     let size = width * height;
-    let mut buffer: Vec<u16> = vec![0u16; size];
+    let mut buffer: Vec<u16> = vec![0u16; size as usize];
     reader::sample_data(tiff, &buffer, 0);
     reader::close(tiff);
 
@@ -52,7 +52,7 @@ fn can_manipulate_image_32() {
     let width = reader::width(tiff);
     let height = reader::height(tiff);
     let size = width * height;
-    let mut buffer: Vec<f32> = vec![0f32; size];
+    let mut buffer: Vec<f32> = vec![0f32; size as usize];
     reader::sample_data(tiff, &buffer, 0);
     reader::close(tiff);
 
