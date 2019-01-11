@@ -1,6 +1,6 @@
 [package]
 name = "tiny_tiff"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["ryn1x <ryn1x@tutanota.com>"]
 edition = "2018"
 description = "tiny_tiff is a wrapper for the TinyTIFF C++ library. It enables easy reading and writing of uncompressed TIFF images with uint, int, and float data types."
