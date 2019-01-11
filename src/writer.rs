@@ -8,22 +8,22 @@ use std::os::raw::c_int;
 use std::os::raw::c_long;
 
 #[repr(C)]
-pub struct TinyTIFFFile {
+pub struct TinyTiffFile {
     file: *mut FILE,
-    lastIFDOffsetField: u32,
-    lastStartPos: c_long,
-    lastIFDDATAAdress: u32,
-    lastIFDCount: u16,
-    lastHeader: *mut u8,
-    lastHeaderSize: c_int,
+    last_ifd_offset_field: u32,
+    last_start_pos: c_long,
+    last_ifd_data_address: u32,
+    last_if_count: u16,
+    last_header: *mut u8,
+    last_header_size: c_int,
     pos: u32,
     width: u32,
     height: u32,
-    bitspersample: u16,
-    descriptionOffset: u32,
-    descriptionSizeOffset: u32,
+    bits_per_sample: u16,
+    description_offset: u32,
+    description_size_offset: u32,
     frames: u64,
-    byteorder: u8,
+    byte_order: u8,
 }
 
 #[link(name = "tinytiff")]
@@ -33,25 +33,24 @@ extern "C" {
         bits_per_sample: u16,
         width: u32,
         height: u32,
-    ) -> *mut TinyTIFFFile;
-    fn TinyTIFFWriter_getMaxDescriptionTextSize(tiff: *mut TinyTIFFFile) -> c_int;
-    fn TinyTIFFWriter_close(tiff: *mut TinyTIFFFile, image_description: *const c_char);
-    fn TinyTIFFWriter_writeImageVoid(tiff: *mut TinyTIFFFile, image_data: *mut c_void);
-    fn TinyTIFFWriter_writeImageFloat(tiff: *mut TinyTIFFFile, image_data: *mut c_float);
-    fn TinyTIFFWriter_writeImageDouble(tiff: *mut TinyTIFFFile, image_data: *mut c_double);
+    ) -> *mut TinyTiffFile;
+    fn TinyTIFFWriter_getMaxDescriptionTextSize(tiff: *mut TinyTiffFile) -> c_int;
+    fn TinyTIFFWriter_close(tiff: *mut TinyTiffFile, image_description: *const c_char);
+    fn TinyTIFFWriter_writeImageVoid(tiff: *mut TinyTiffFile, image_data: *mut c_void);
+    fn TinyTIFFWriter_writeImageFloat(tiff: *mut TinyTiffFile, image_data: *mut c_float);
+    fn TinyTIFFWriter_writeImageDouble(tiff: *mut TinyTiffFile, image_data: *mut c_double);
 }
 
 /// create a new tiff file
 pub fn open(
     filename: &str,
-    bits_per_sample: usize,
-    width: usize,
-    height: usize,
-) -> Result<*mut TinyTIFFFile, String> {
+    bits_per_sample: u16,
+    width: u32,
+    height: u32,
+) -> Result<*mut TinyTiffFile, String> {
     let cfilename = CString::new(filename).unwrap();
     let pntr = cfilename.as_ptr();
-    let tiff =
-        unsafe { TinyTIFFWriter_open(pntr, bits_per_sample as u16, width as u32, height as u32) };
+    let tiff = unsafe { TinyTIFFWriter_open(pntr, bits_per_sample, width, height) };
     match tiff.is_null() {
         false => Ok(tiff),
         true => Err(format!("Could not open file: {}", String::from(filename))),
@@ -59,36 +58,37 @@ pub fn open(
 }
 
 /// get max size for image description
-pub fn max_description_text_size(tiff: *mut TinyTIFFFile) -> usize {
+pub fn max_description_text_size(tiff: *mut TinyTiffFile) -> u32 {
     let size = unsafe { TinyTIFFWriter_getMaxDescriptionTextSize(tiff) };
-    size as usize
+    size as u32
 }
 
 /// close the tiff and write image description to first frame
-pub fn close(tiff: *mut TinyTIFFFile, image_description: &str) {
+pub fn close(tiff: *mut TinyTiffFile, image_description: &str) {
     let image_description = CString::new(image_description).unwrap();
     let image_description = image_description.as_ptr();
     unsafe { TinyTIFFWriter_close(tiff, image_description) };
 }
 
 /// writes row-major image data to a tiff file
-pub fn write_image_void<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
+pub fn write_image_void<T>(tiff: *mut TinyTiffFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_void;
     unsafe { TinyTIFFWriter_writeImageVoid(tiff, pntr) };
 }
 
 /// writes row-major image data to a tiff file
-pub fn write_image_float<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
+pub fn write_image_float<T>(tiff: *mut TinyTiffFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_float;
     unsafe { TinyTIFFWriter_writeImageFloat(tiff, pntr) };
 }
 
 /// writes row-major image data to a tiff file
-pub fn write_image_double<T>(tiff: *mut TinyTIFFFile, buffer: &Vec<T>) {
+pub fn write_image_double<T>(tiff: *mut TinyTiffFile, buffer: &Vec<T>) {
     let pntr = buffer.as_ptr() as *mut c_double;
     unsafe { TinyTIFFWriter_writeImageDouble(tiff, pntr) };
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -112,11 +112,11 @@ mod tests {
 
     #[test]
     fn can_write_image_void8_and_close() {
-        let bits = 8;
-        let width = 100;
-        let height = 100;
+        let bits: u16 = 8;
+        let width: u32 = 100;
+        let height: u32 = 100;
         let size = width * height;
-        let mut buffer: Vec<u8> = vec![42u8; size];
+        let buffer: Vec<u8> = vec![42u8; size as usize];
         let tiff = open("./tests/test_data/test8.tif", bits, width, height).unwrap();
         write_image_void(tiff, &buffer);
         close(tiff, "test 8bit");
@@ -124,11 +124,11 @@ mod tests {
 
     #[test]
     fn can_write_image_void16_and_close() {
-        let bits = 16;
-        let width = 100;
-        let height = 100;
+        let bits: u16 = 16;
+        let width: u32 = 100;
+        let height: u32 = 100;
         let size = width * height;
-        let mut buffer: Vec<u16> = vec![42u16; size];
+        let buffer: Vec<u16> = vec![42u16; size as usize];
         let tiff = open("./tests/test_data/test16.tif", bits, width, height).unwrap();
         write_image_void(tiff, &buffer);
         close(tiff, "test 16bit");
@@ -136,11 +136,11 @@ mod tests {
 
     #[test]
     fn can_write_image_float32_and_close() {
-        let bits = 32;
-        let width = 100;
-        let height = 100;
+        let bits: u16 = 32;
+        let width: u32 = 100;
+        let height: u32 = 100;
         let size = width * height;
-        let mut buffer: Vec<f32> = vec![42f32; size];
+        let buffer: Vec<f32> = vec![42f32; size as usize];
         let tiff = open("./tests/test_data/test32.tif", bits, width, height).unwrap();
         write_image_float(tiff, &buffer);
         close(tiff, "test 32bit");
@@ -148,11 +148,11 @@ mod tests {
 
     #[test]
     fn can_write_image_double64_and_close() {
-        let bits = 64;
-        let width = 100;
-        let height = 100;
+        let bits: u16 = 64;
+        let width: u32 = 100;
+        let height: u32 = 100;
         let size = width * height;
-        let mut buffer: Vec<f64> = vec![42f64; size];
+        let buffer: Vec<f64> = vec![42f64; size as usize];
         let tiff = open("./tests/test_data/test64.tif", bits, width, height).unwrap();
         write_image_double(tiff, &buffer);
         close(tiff, "test 64bit");

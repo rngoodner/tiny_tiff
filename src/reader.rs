@@ -3,68 +3,65 @@ use std::ffi::c_void;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::os::raw::c_char;
-use std::os::raw::c_double;
-use std::os::raw::c_float;
 use std::os::raw::c_int;
-use std::os::raw::c_long;
 
 const TIFF_LAST_ERROR_SIZE: usize = 1024;
 
 #[repr(C)]
-pub struct TinyTIFFReaderFrame {
+pub struct TinyTiffReaderFrame {
     width: u32,
     height: u32,
     compression: u16,
-    rowsperstrip: u32,
-    stripoffsets: *mut u32,
-    stripbytecounts: *mut u32,
-    stripcount: u32,
-    samplesperpixel: u16,
-    bitspersample: *mut u16,
-    planarconfiguration: u16,
-    sampleformat: u16,
-    imagelength: u32,
+    rows_per_strip: u32,
+    strip_offsets: *mut u32,
+    strip_byte_counts: *mut u32,
+    strip_count: u32,
+    samples_per_pixel: u16,
+    bits_per_sample: *mut u16,
+    planar_configuration: u16,
+    sample_format: u16,
+    image_length: u32,
     description: *mut c_char,
 }
 
 #[repr(C)]
-pub struct TinyTIFFReaderFile {
+pub struct TinyTiffReaderFile {
     file: *mut FILE,
-    lastError: [c_char; TIFF_LAST_ERROR_SIZE],
-    wasError: c_int,
-    systembyteorder: u8,
-    filebyteorder: u8,
-    firstrecord_offset: u32,
-    nextifd_offset: u32,
-    filesize: u64,
-    currentFrame: TinyTIFFReaderFrame,
+    last_error: [c_char; TIFF_LAST_ERROR_SIZE],
+    was_error: c_int,
+    system_byte_order: u8,
+    file_byte_order: u8,
+    first_record_offset: u32,
+    next_ifd_offset: u32,
+    file_size: u64,
+    current_frame: TinyTiffReaderFrame,
 }
 
 #[link(name = "tinytiff")]
 extern "C" {
-    fn TinyTIFFReader_open(filename: *const c_char) -> *mut TinyTIFFReaderFile;
-    fn TinyTIFFReader_close(tiff: *mut TinyTIFFReaderFile);
-    fn TinyTIFFReader_getBitsPerSample(tiff: *mut TinyTIFFReaderFile, sample: c_int) -> u16;
+    fn TinyTIFFReader_open(filename: *const c_char) -> *mut TinyTiffReaderFile;
+    fn TinyTIFFReader_close(tiff: *mut TinyTiffReaderFile);
+    fn TinyTIFFReader_getBitsPerSample(tiff: *mut TinyTiffReaderFile, sample: c_int) -> u16;
     fn TinyTIFFReader_getSampleData(
-        tiff: *mut TinyTIFFReaderFile,
+        tiff: *mut TinyTiffReaderFile,
         sample_data: *mut c_void,
         sample: u16,
     ) -> c_int;
-    fn TinyTIFFReader_getWidth(tiff: *mut TinyTIFFReaderFile) -> c_int;
-    fn TinyTIFFReader_getHeight(tiff: *mut TinyTIFFReaderFile) -> c_int;
-    fn TinyTIFFReader_countFrames(tiff: *mut TinyTIFFReaderFile) -> c_int;
-    fn TinyTIFFReader_getSampleFormat(tiff: *mut TinyTIFFReaderFile) -> u16;
-    fn TinyTIFFReader_getSamplesPerPixel(tiff: *mut TinyTIFFReaderFile) -> u16;
-    fn TinyTIFFReader_getImageDescription(tiff: *mut TinyTIFFReaderFile) -> *const c_char;
-    fn TinyTIFFReader_hasNext(tiff: *mut TinyTIFFReaderFile) -> c_int;
-    fn TinyTIFFReader_readNext(tiff: *mut TinyTIFFReaderFile) -> c_int;
-    fn TinyTIFFReader_success(tiff: *mut TinyTIFFReaderFile) -> c_int;
-    fn TinyTIFFReader_wasError(tiff: *mut TinyTIFFReaderFile) -> c_int;
-    fn TinyTIFFReader_getLastError(tiff: *mut TinyTIFFReaderFile) -> *const c_char;
+    fn TinyTIFFReader_getWidth(tiff: *mut TinyTiffReaderFile) -> c_int;
+    fn TinyTIFFReader_getHeight(tiff: *mut TinyTiffReaderFile) -> c_int;
+    fn TinyTIFFReader_countFrames(tiff: *mut TinyTiffReaderFile) -> c_int;
+    fn TinyTIFFReader_getSampleFormat(tiff: *mut TinyTiffReaderFile) -> u16;
+    fn TinyTIFFReader_getSamplesPerPixel(tiff: *mut TinyTiffReaderFile) -> u16;
+    fn TinyTIFFReader_getImageDescription(tiff: *mut TinyTiffReaderFile) -> *const c_char;
+    fn TinyTIFFReader_hasNext(tiff: *mut TinyTiffReaderFile) -> c_int;
+    fn TinyTIFFReader_readNext(tiff: *mut TinyTiffReaderFile) -> c_int;
+    fn TinyTIFFReader_success(tiff: *mut TinyTiffReaderFile) -> c_int;
+    fn TinyTIFFReader_wasError(tiff: *mut TinyTiffReaderFile) -> c_int;
+    fn TinyTIFFReader_getLastError(tiff: *mut TinyTiffReaderFile) -> *const c_char;
 }
 
 /// open tiff file for reading
-pub fn open(filename: &str) -> Result<*mut TinyTIFFReaderFile, String> {
+pub fn open(filename: &str) -> Result<*mut TinyTiffReaderFile, String> {
     let cfilename = CString::new(filename).unwrap();
     let pntr = cfilename.as_ptr();
     let tiff = unsafe { TinyTIFFReader_open(pntr) };
@@ -75,55 +72,55 @@ pub fn open(filename: &str) -> Result<*mut TinyTIFFReaderFile, String> {
 }
 
 /// close tiff file
-pub fn close(tiff: *mut TinyTIFFReaderFile) {
+pub fn close(tiff: *mut TinyTiffReaderFile) {
     unsafe { TinyTIFFReader_close(tiff) };
 }
 
 /// get bits per sample of current frame
-pub fn bits_per_sample(tiff: *mut TinyTIFFReaderFile, sample: usize) -> usize {
+pub fn bits_per_sample(tiff: *mut TinyTiffReaderFile, sample: u16) -> u16 {
     let bits = unsafe { TinyTIFFReader_getBitsPerSample(tiff, sample as i32) };
-    bits as usize
+    bits
 }
 
 /// read data from current frame into supplied buffer
-pub fn sample_data<T>(tiff: *mut TinyTIFFReaderFile, buffer: &Vec<T>, sample: usize) -> bool {
+pub fn sample_data<T>(tiff: *mut TinyTiffReaderFile, buffer: &Vec<T>, sample: u16) -> bool {
     let pntr = buffer.as_ptr() as *mut c_void;
-    let data = unsafe { TinyTIFFReader_getSampleData(tiff, pntr, sample as u16) };
+    let data = unsafe { TinyTIFFReader_getSampleData(tiff, pntr, sample) };
     data != 0
 }
 
 /// get width of current frame
-pub fn width(tiff: *mut TinyTIFFReaderFile) -> usize {
+pub fn width(tiff: *mut TinyTiffReaderFile) -> u32 {
     let width = unsafe { TinyTIFFReader_getWidth(tiff) };
-    width as usize
+    width as u32
 }
 
 /// get height of current frame
-pub fn height(tiff: *mut TinyTIFFReaderFile) -> usize {
+pub fn height(tiff: *mut TinyTiffReaderFile) -> u32 {
     let height = unsafe { TinyTIFFReader_getHeight(tiff) };
-    height as usize
+    height as u32
 }
 
 /// get number of frames
-pub fn count_frames(tiff: *mut TinyTIFFReaderFile) -> usize {
+pub fn count_frames(tiff: *mut TinyTiffReaderFile) -> u32 {
     let frames = unsafe { TinyTIFFReader_countFrames(tiff) };
-    frames as usize
+    frames as u32
 }
 
 /// get sample format of current frame
-pub fn sample_format(tiff: *mut TinyTIFFReaderFile) -> usize {
+pub fn sample_format(tiff: *mut TinyTiffReaderFile) -> u16 {
     let format = unsafe { TinyTIFFReader_getSampleFormat(tiff) };
-    format as usize
+    format
 }
 
 /// get samples per pixel of current from
-pub fn samples_per_pixel(tiff: *mut TinyTIFFReaderFile) -> usize {
+pub fn samples_per_pixel(tiff: *mut TinyTiffReaderFile) -> u16 {
     let format = unsafe { TinyTIFFReader_getSamplesPerPixel(tiff) };
-    format as usize
+    format
 }
 
 /// get image description of current frame
-pub fn image_description(tiff: *mut TinyTIFFReaderFile) -> String {
+pub fn image_description(tiff: *mut TinyTiffReaderFile) -> String {
     let desc = unsafe { TinyTIFFReader_getImageDescription(tiff) };
     let desc = unsafe { CStr::from_ptr(desc) };
     let desc = desc.to_str().unwrap();
@@ -132,31 +129,31 @@ pub fn image_description(tiff: *mut TinyTIFFReaderFile) -> String {
 }
 
 /// true if another frame exists
-pub fn has_next(tiff: *mut TinyTIFFReaderFile) -> bool {
+pub fn has_next(tiff: *mut TinyTiffReaderFile) -> bool {
     let result = unsafe { TinyTIFFReader_hasNext(tiff) };
     result != 0
 }
 
 /// read next frame from a multi-frame tiff
-pub fn read_next(tiff: *mut TinyTIFFReaderFile) -> bool {
+pub fn read_next(tiff: *mut TinyTiffReaderFile) -> bool {
     let result = unsafe { TinyTIFFReader_readNext(tiff) };
     result != 0
 }
 
 /// true if no error in last function call
-pub fn success(tiff: *mut TinyTIFFReaderFile) -> bool {
+pub fn success(tiff: *mut TinyTiffReaderFile) -> bool {
     let result = unsafe { TinyTIFFReader_success(tiff) };
     result != 0
 }
 
 /// true if error in last function call
-pub fn was_error(tiff: *mut TinyTIFFReaderFile) -> bool {
+pub fn was_error(tiff: *mut TinyTiffReaderFile) -> bool {
     let result = unsafe { TinyTIFFReader_wasError(tiff) };
     result != 0
 }
 
 /// get last error messsage
-pub fn last_error(tiff: *mut TinyTIFFReaderFile) -> String {
+pub fn last_error(tiff: *mut TinyTiffReaderFile) -> String {
     let error = unsafe { TinyTIFFReader_getLastError(tiff) };
     let error = unsafe { CStr::from_ptr(error) };
     let error = error.to_str().unwrap();
@@ -164,6 +161,7 @@ pub fn last_error(tiff: *mut TinyTIFFReaderFile) -> String {
     error
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -197,7 +195,7 @@ mod tests {
         let width = width(tiff);
         let height = height(tiff);
         let size = (width * height) as usize;
-        let mut buffer: Vec<u8> = vec![0u8; size];
+        let buffer: Vec<u8> = vec![0u8; size];
         let result = sample_data(tiff, &buffer, 0);
         close(tiff);
         assert!(result);
