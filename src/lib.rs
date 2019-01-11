@@ -42,7 +42,7 @@
 //! let width = reader::width(tiff);
 //! let height = reader::height(tiff);
 //! let size = width * height;
-//! let mut buffer: Vec<f32> = vec![0f32; size as usize];
+//! let mut buffer: Vec<f32> = vec![0f32; size];
 //! reader::sample_data(tiff, &buffer, 0);
 //! reader::close(tiff);
 //!
