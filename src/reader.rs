@@ -83,7 +83,7 @@ pub fn bits_per_sample(tiff: *mut TinyTiffReaderFile, sample: u16) -> u16 {
 }
 
 /// read data from current frame into supplied buffer
-pub fn sample_data<T>(tiff: *mut TinyTiffReaderFile, buffer: &Vec<T>, sample: u16) -> bool {
+pub fn sample_data<T>(tiff: *mut TinyTiffReaderFile, buffer: &mut Vec<T>, sample: u16) -> bool {
     let pntr = buffer.as_ptr() as *mut c_void;
     let data = unsafe { TinyTIFFReader_getSampleData(tiff, pntr, sample) };
     data != 0
@@ -195,8 +195,8 @@ mod tests {
         let width = width(tiff);
         let height = height(tiff);
         let size = (width * height) as usize;
-        let buffer: Vec<u8> = vec![0u8; size];
-        let result = sample_data(tiff, &buffer, 0);
+        let mut buffer: Vec<u8> = vec![0u8; size];
+        let result = sample_data(tiff, &mut buffer, 0);
         close(tiff);
         assert!(result);
         assert_eq!(buffer[2], 112 as u8);

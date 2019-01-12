@@ -11,7 +11,7 @@ fn can_manipulate_image_8() {
     let height = reader::height(tiff);
     let size = width * height;
     let mut buffer: Vec<u8> = vec![0u8; size as usize];
-    reader::sample_data(tiff, &buffer, 0);
+    reader::sample_data(tiff, &mut buffer, 0);
     reader::close(tiff);
 
     for px in &mut buffer {
@@ -31,7 +31,7 @@ fn can_manipulate_image_16() {
     let height = reader::height(tiff);
     let size = width * height;
     let mut buffer: Vec<u16> = vec![0u16; size as usize];
-    reader::sample_data(tiff, &buffer, 0);
+    reader::sample_data(tiff, &mut buffer, 0);
     reader::close(tiff);
 
     for px in &mut buffer {
@@ -53,7 +53,7 @@ fn can_manipulate_image_32() {
     let height = reader::height(tiff);
     let size = width * height;
     let mut buffer: Vec<f32> = vec![0f32; size as usize];
-    reader::sample_data(tiff, &buffer, 0);
+    reader::sample_data(tiff, &mut buffer, 0);
     reader::close(tiff);
 
     for px in &mut buffer {
