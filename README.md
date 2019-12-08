@@ -2,12 +2,12 @@
 
 `tiny_tiff` is a wrapper for a lightly modified version of the TinyTIFF C++ library. It enables easy reading and writing of uncompressed TIFF images with uint, int, or float data types.
 
-DEPENDANCIES
+DEPENDENCIES
 ============
 
 ## Unix
 
-Dependancies will be automatically installed if Linux or macOS is detected. Note that you will be prompted for your password when "sudo make install" is attempted. Manual instructions just in case the build script fails:
+Dependencies will be automatically installed if Linux or macOS is detected. Note that you will be prompted for your password when "sudo make install" is attempted. Manual instructions just in case the build script fails:
 
 - `git clone https://github.com/ryn1x/TinyTIFF.git`
 - `cd TinyTIFF`
