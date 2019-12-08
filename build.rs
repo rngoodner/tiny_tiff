@@ -6,6 +6,10 @@ use std::process::Command;
 // clone and install TinyTIFF
 // will prompt for sudo to run make install
 fn main() {
+    // only put new files in out_dir
+    let out_dir = env::var("OUT_DIR").expect("could not get OUT_DIR");
+    env::set_current_dir(out_dir).expect("could not set OUT_DIR");
+
     // if on linux or macos
     if env::consts::OS == "linux" || env::consts::OS == "macos" {
         // check for git
