@@ -6,26 +6,13 @@ uncompressed TIFF images with uint, int, or float data types.
 DEPENDANCIES
 ============
 
-## Unix
-
-- `git clone https://github.com/ryn1x/TinyTIFF.git`
+- `git clone https://github.com/rngoodner/TinyTIFF.git`
 - `cd TinyTIFF`
 - `mkdir build`
 - `cd build`
 - `cmake ..`
-- `make`
+- `make -j`
 - `sudo make install`
-
-
-## Windows
-
-- `git clone https://github.com/ryn1x/TinyTIFF.git`
-- `cd TinyTIFF`
-- `mkdir build`
-- `cd build`
-- `cmake ..`
-- `cmake -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DBUILD_SHARED_LIBS=TRUE -G "Visual Studio 15 2017 win64" ..`
-- build generated ".sln" file with visual studio
 
 DOCUMENTATION
 ============
@@ -34,6 +21,6 @@ DOCUMENTATION
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright 2018 ryn1x
+Copyright 2022 rngoodner
 
 This library is free software; you can redistribute it and/or modify it under the MIT or APACHE-2.0 licenses.
